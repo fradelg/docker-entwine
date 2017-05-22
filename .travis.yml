@@ -1,0 +1,20 @@
+sudo: required
+
+services:
+  - docker
+
+env:
+  global:
+    - DOCKER_IMAGE=fradelg/entwine
+
+install:
+  - npm install -g dockerlint
+
+script:
+  - dockerlint Dockerfile
+
+after_success:
+  - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
+  - docker image build -f Dockerfile -t $DOCKER_IMAGE:$TAG .
+  - docker image push $DOCKER_IMAGE:$TAG
